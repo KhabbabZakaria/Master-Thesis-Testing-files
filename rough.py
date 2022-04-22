@@ -76,51 +76,50 @@ def Nmaxelements(list1, N):
     return final_list
 
 
-
-a = 0
+a = 1
 df = pd.read_csv(os.path.join(ref_folder, file))
-df = df.iloc[-T*100:]
+df = df.iloc[:T*50]
+print(df.iloc[0])
+volume1 = df['volume'].iloc[T*a:T*(a+1)].tolist()
+price1 = df['vwap'].iloc[T*a:T*(a+1)].tolist()
 
-volume = df['volume'].iloc[T*a:T*(a+1)].tolist()
-print(volume)
-Q = sum(volume)*0.01
-print(Q)
-price = df['vwap'].iloc[T*a:T*(a+1)].tolist()
-twap = [Q/T]*T
+products = []
+for num1, num2 in zip(volume1, price1):
+	products.append(num1 * num2)
 
-print(df)
+volume1 = products
+volume1 = volume1[::-1]
+
+a = 2
+df = pd.read_csv(os.path.join(ref_folder, file))
+df = df.iloc[:T*50]
+volume2 = df['volume'].iloc[T*a:T*(a+1)].tolist()
+price2 = df['vwap'].iloc[T*a:T*(a+1)].tolist()
+
+products = []
+for num1, num2 in zip(volume2, price2):
+	products.append(num1 * num2)
+
+volume2 = products
+
+volume2 = volume2[::-1]
 
 
+x1 = list(range(len(volume1)))
 
+coef = np.polyfit(x1,volume1,6)
+poly1d_fn1 = np.poly1d(coef) 
 
+x2 = list(range(len(volume2)))
 
+coef = np.polyfit(x2,volume2,6)
+poly1d_fn2 = np.poly1d(coef) 
 
-
-'''fig, ax1 = plt.subplots()
-ax2 = ax1.twinx()
-ax1.plot(price, 'g--', label = 'Price')
-ax2.plot(twap, 'b-')
-
-ax1.set_xlabel('Minute of the Day')
-ax1.set_ylabel('Price of the Stock in USD', color='g')
-ax2.set_ylabel('How much stocks we need to sell', color='b')
+plt.grid()
+plt.plot(x1, poly1d_fn1(x1), color = 'b', label = 'Date: 2022-03-10')
+plt.plot(x2, poly1d_fn2(x2), color = '0.8', label = 'Date: 2022-03-09')
 plt.legend()
-plt.title('AMZN on Date: 2020-08-12 using TWAP')
-
-
-plt.show()'''
-
-import plotly.graph_objects as go
-
-import pandas as pd
-from datetime import datetime
-
-df = df[:T]
-
-fig = go.Figure(data=[go.Candlestick(x=df['time'],
-                open=df['open'],
-                high=df['high'],
-                low=df['low'],
-                close=df['close'])])
-
-fig.show()
+plt.xlabel('Minute of the Day')
+plt.ylabel('Volume Trade at the Minute')
+plt.title('Volumes of FB that is traded on 2 consecutive days during Inflation+War')
+plt.show()
