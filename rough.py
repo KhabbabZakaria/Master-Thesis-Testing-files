@@ -1,4 +1,3 @@
-from cProfile import label
 from data import *
 from actorcritic import *
 from parameters import *
@@ -11,11 +10,6 @@ import math
 import itertools
 import numpy as np
 
-import matplotlib.pyplot as plt
-import matplotlib.dates as mdates
-from matplotlib.lines import Line2D
-import yfinance as yf
-
 
 os.chdir(os.path.dirname(os.path.abspath(__file__)))
 
@@ -23,7 +17,6 @@ os.chdir(os.path.dirname(os.path.abspath(__file__)))
 current_dir = os.getcwd()
 ref_folder = os.path.join(current_dir, 'preprocessed_dir')
 files = [name for name in os.listdir(ref_folder) if name!= 'vwap calculation.py']
-
 
 
 
@@ -60,66 +53,84 @@ def calc_vwap(df_csv):
 file = files[ref_stock]
 #print('........................................................')
 #print(file)
-def Nmaxelements(list1, N):
-    final_list = []
-  
-    for i in range(0, N): 
-        max1 = -10000000
-          
-        for j in range(len(list1)):     
-            if list1[j] > max1:
-                max1 = list1[j]
-        print(max1)     
-        list1.remove(max1)
-        final_list.append(max1)
-          
-    return final_list
-
-
-a = 1
 df = pd.read_csv(os.path.join(ref_folder, file))
 df = df.iloc[:T*50]
-print(df.iloc[0])
-volume1 = df['volume'].iloc[T*a:T*(a+1)].tolist()
-price1 = df['vwap'].iloc[T*a:T*(a+1)].tolist()
+print(df.iloc[T*15:T*16])
 
-products = []
-for num1, num2 in zip(volume1, price1):
-	products.append(num1 * num2)
-
-volume1 = products
-volume1 = volume1[::-1]
-
-a = 2
-df = pd.read_csv(os.path.join(ref_folder, file))
-df = df.iloc[:T*50]
-volume2 = df['volume'].iloc[T*a:T*(a+1)].tolist()
-price2 = df['vwap'].iloc[T*a:T*(a+1)].tolist()
-
-products = []
-for num1, num2 in zip(volume2, price2):
-	products.append(num1 * num2)
-
-volume2 = products
-
-volume2 = volume2[::-1]
+volume = df['volume'].iloc[T*15:T*16].tolist()
+Q = sum(volume)*0.01
 
 
-x1 = list(range(len(volume1)))
+price = df['vwap'].iloc[T*15:T*16].tolist()
 
-coef = np.polyfit(x1,volume1,6)
-poly1d_fn1 = np.poly1d(coef) 
 
-x2 = list(range(len(volume2)))
+volumes = df['volume'].iloc[T*15:T*16]
+volume_list = volumes.values.tolist()
 
-coef = np.polyfit(x2,volume2,6)
-poly1d_fn2 = np.poly1d(coef) 
 
-plt.grid()
-plt.plot(x1, poly1d_fn1(x1), color = 'b', label = 'Date: 2022-03-10')
-plt.plot(x2, poly1d_fn2(x2), color = '0.8', label = 'Date: 2022-03-09')
+weight_vwap_list = []
+for i in range(len(volume_list)):
+    weight_vwap_list.append(volume_list[i]/sum(volume_list))
+
+
+vwaplist = []
+for i in range(len(df.iloc[T*15:T*16])):
+    q = Q*weight_vwap_list[i]
+    vwaplist.append(q)
+
+
+
+
+modellist = []
+for k in range(1,2):
+    PATH = 'seed_' + str(k) + '_model.pt'
+    #print(PATH)
+
+    agent = Agent(model, is_eval=True, model_name=PATH)
+    env.reset()
+    state, _ = getState(all_stressed_test_list[-16], all_stressed_test_vwap_list[-16], env.time, state_size)
+
+    for j in range(state_size, len((all_stressed_test_list[15]))):
+        if j%10==0:
+            already_bought_tensor = torch.Tensor(env.already_bought_list)
+            left_time = T - env.time
+            left_time_tensor = torch.Tensor(list(range(left_time+1,left_time+1+state_size)))
+            private_input = torch.stack((already_bought_tensor, left_time_tensor)).reshape(state_size, 2)
+            private_input = private_input.to(device)
+            state = state.to(device)
+            action, _ = agent.act(private_input, state)
+            for _ in range(10):
+             modellist.append((action*Q).item())
+
+modellist = modellist[::-1]
+
+x = list(range(len(vwaplist)))
+coef_vwap = np.polyfit(x,vwaplist,10)
+poly1d_fn_vwap = np.poly1d(coef_vwap) 
+
+x = list(range(len(modellist)))
+coef_model = np.polyfit(x,modellist,5)
+poly1d_fn_model = np.poly1d(coef_model) 
+
+
+
+import matplotlib.pyplot as plt
+
+x = list(range(len(volume_list)))
+fig, ax1 = plt.subplots()
+ax2 = ax1.twinx()
+ax1.plot(price, 'g--', label = 'price')
+ax2.plot(x, poly1d_fn_vwap(x), 'b-', label = 'vwap')
+ax2.plot(x, poly1d_fn_model(x), 'r-', label = 'DRL')
+ax2.fill_between(
+    x, volume_list, alpha=0.25, 
+    label="Total trade in the market"
+)
+
+ax1.set_xlabel('Minute of the Day')
+ax1.set_ylabel('Price of the Stock in USD', color='g')
+ax2.set_ylabel('Stocks to sell at the minute', color='k')
+ax2.axis(ymin=0, ymax=10000)
 plt.legend()
-plt.xlabel('Minute of the Day')
-plt.ylabel('Volume Trade at the Minute')
-plt.title('Volumes of FB that is traded on 2 consecutive days during Inflation+War')
+plt.title('FB on 2022-02-16')
 plt.show()
