@@ -82,29 +82,8 @@ for k in range(1,2):
 
 print(df)
 
-#model_list = [x - 500000 for x in model_list]
-model_list2 = []
-for i in range(len(model_list)): 
-    if i<len(model_list)/1.1:
-        model_list2.append(model_list[i] - 500000)
-    elif i>len(model_list)/1.1 and i<len(model_list)/1.5:
-        model_list2.append(model_list[i] - 450000)
-    elif i>len(model_list)/1.5 and i<len(model_list)/2:
-        model_list2.append(model_list[i] - 400000)
-    elif i>len(model_list)/2 and i<len(model_list)/2.5:
-        model_list2.append(model_list[i] - 350000)
-    elif i>len(model_list)/2.5 and i<len(model_list)/3:
-        model_list2.append(model_list[i] - 300000)
-    elif i>len(model_list)/3 and i<len(model_list)/4:
-        model_list2.append(model_list[i] - 250000)
-    elif i>len(model_list)/4 and i<len(model_list)/8:
-        model_list2.append(model_list[i] - 200000)
-    elif i>len(model_list)/8 and i<len(model_list)/12:
-        model_list2.append(model_list[i] - 100000)
-    elif i>len(model_list)/12 and i<len(model_list)/16:
-        model_list2.append(model_list[i] - 50000)
-    else:
-        model_list2.append(model_list[i])
+model_list2 = modellist
+
 
 
 
