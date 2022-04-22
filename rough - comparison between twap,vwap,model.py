@@ -82,7 +82,6 @@ for k in range(1,2):
 
 print(df)
 
-#model_list = [x - 500000 for x in model_list]
 model_list2 = modellist
 
 
