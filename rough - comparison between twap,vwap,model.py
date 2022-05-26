@@ -69,7 +69,8 @@ for k in range(1,2):
             private_input = private_input.to(device)
             state = state.to(device)
             action, _ = agent.act(private_input, state)
-            if action*Q*price[j] > 1e6:
+            model_list.append((action*Q*price[j]).item())
+            '''if action*Q*price[j] > 1e6:
                 model_list.append((action*Q*price[j]).item())
                 model_list.append((action*Q*price[j]).item())
                 model_list.append((action*Q*price[j]).item())
@@ -77,7 +78,7 @@ for k in range(1,2):
             else:
                 model_list.append((action*Q*price[j]).item())
                 model_list.append((action*Q*price[j]).item())
-                model_list.append((action*Q*price[j]).item())
+                model_list.append((action*Q*price[j]).item())'''
 
 
 print(df)
