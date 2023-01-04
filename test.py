@@ -1,3 +1,5 @@
+#Comparing the Price Advantage and probable other results from TWAP, VWAP and DRL models for an entire dataset, for example testset1, testset2, stressed testset, etc
+
 from data import *
 from actorcritic import *
 from parameters import *
@@ -18,9 +20,10 @@ current_dir = os.getcwd()
 ref_folder = os.path.join(current_dir, 'preprocessed_dir')
 files = [name for name in os.listdir(ref_folder) if name!= 'vwap calculation.py']
 
-
+#Assumption = we are selling 10**5 units on a day (not most important, can be arbitrary)
 Q = 10**5
 
+#twap price calculation
 def calc_twap(df_csv):
     n = len(df_csv) - 1
     price_sum = 0.0
@@ -33,7 +36,7 @@ def calc_twap(df_csv):
 
     return price_sum / n
 
-
+#vwap price calculation
 def calc_vwap(df_csv):
     n = len(df_csv) - 1
     total_sum = 0.0
@@ -49,8 +52,7 @@ def calc_vwap(df_csv):
 
     return total_sum / volume_sum
 
-
-
+# ref stock is the index of stock from either Large or Mid or Small Caps or ETFs
 file = files[ref_stock]
 #print('........................................................')
 #print(file)
@@ -76,6 +78,7 @@ summed_volume_list = list(itertools.chain.from_iterable(itertools.repeat(x, T) f
 weight_vwap_list = []
 for i in range(len(summed_volume_list)):
     weight_vwap_list.append(volume_list[i]/summed_volume_list[i])
+
 
 '''summed_vwap_list = []
 for i in range(int(len(vwaps)/T)):
@@ -208,7 +211,7 @@ except:
 ########################################################
 #########################Model##########################
 ########################################################
-''' 
+
 for k in range(1,2):
     PATH = 'seed_' + str(k) + '_model.pt'
     #print(PATH)
@@ -270,6 +273,5 @@ for k in range(1,2):
         print('Model seed' + str(k) + 'GLR', GLR)
     except:
         print('all are positive')
-'''
 
 
