@@ -1,3 +1,6 @@
+#how the models behave for a stock on a specific day in Test set. 
+# here we test how with the price of the asset, the selling is done
+
 from data import *
 from actorcritic import *
 from parameters import *
@@ -19,7 +22,7 @@ ref_folder = os.path.join(current_dir, 'preprocessed_dir')
 files = [name for name in os.listdir(ref_folder) if name!= 'vwap calculation.py']
 
 
-
+#calculation of twap price
 def calc_twap(df_csv):
     n = len(df_csv) - 1
     price_sum = 0.0
@@ -32,7 +35,7 @@ def calc_twap(df_csv):
 
     return price_sum / n
 
-
+#calculation of vwap price
 def calc_vwap(df_csv):
     n = len(df_csv) - 1
     total_sum = 0.0
@@ -49,13 +52,14 @@ def calc_vwap(df_csv):
     return total_sum / volume_sum
 
 
-
+#ref_stock is the index  of the stock out of the stocks from either Large or Mid or Small Caps or EFTs
 file = files[ref_stock]
 #print('........................................................')
 #print(file)
 df = pd.read_csv(os.path.join(ref_folder, file))
 df = df.iloc[-T*100:]
 
+#a => a specific day in the Test set
 a = 10
 print(df.iloc[T*a:T*(a+1)])
 
@@ -82,7 +86,7 @@ for i in range(len(df.iloc[T*a:T*(a+1)])):
 
 
 
-
+#modellist is the list where we are appending the sales
 modellist = []
 for k in range(1,2):
     PATH = 'seed_' + str(k) + '_model.pt'
